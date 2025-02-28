@@ -378,8 +378,11 @@ def main() -> None:
 
     # Start the Bot
     port = int(os.environ.get('PORT', 8443))
-    updater.start_webhook(listen="0.0.0.0", port=port, url_path=token)
-    updater.bot.set_webhook(f'https://{os.environ.get("HEROKU_APP_NAME")}.herokuapp.com/{token}')
+    try:
+        updater.start_webhook(listen="0.0.0.0", port=port, url_path=token)
+        updater.bot.set_webhook(f'https://{os.environ.get("HEROKU_APP_NAME")}.herokuapp.com/{token}')
+    except Exception as e:
+        logger.error(f'Error setting up webhook: {e}')
 
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT
