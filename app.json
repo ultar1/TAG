@@ -7,6 +7,10 @@
     "TOKEN": {
       "description": "The token for the Telegram bot",
       "required": true
+    },
+    "HEROKU_APP_NAME": {
+      "description": "The name of the Heroku app",
+      "required": true
     }
   },
   "formation": {
