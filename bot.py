@@ -266,6 +266,27 @@ def withdraw(update: Update, context: CallbackContext) -> None:
     else:
         update.message.reply_text('Usage: /withdraw <user_id> <amount>')
 
+# Set welcome message command
+def setwelcome(update: Update, context: CallbackContext) -> None:
+    if not is_admin(update):
+        update.message.reply_text('You are not authorized to use this command.')
+        return
+    chat_id = update.effective_chat.id
+    welcome_message = ' '.join(context.args)
+    cursor.execute("INSERT INTO settings (chat_id, welcome_message) VALUES (%s, %s) ON CONFLICT (chat_id) DO UPDATE SET welcome_message = %s", (chat_id, welcome_message, welcome_message))
+    conn.commit()
+    update.message.reply_text('Welcome message set.')
+
+# Welcome new members
+def welcome(update: Update, context: CallbackContext) -> None:
+    chat_id = update.effective_chat.id
+    cursor.execute("SELECT welcome_message FROM settings WHERE chat_id = %s", (chat_id,))
+    result = cursor.fetchone()
+    if result:
+        welcome_message = result[0]
+        for member in update.message.new_chat_members:
+            update.message.reply_text(f'{welcome_message} {member.full_name}')
+
 # Callback query handler
 def button(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
@@ -312,6 +333,8 @@ def button(update: Update, context: CallbackContext) -> None:
         promote(update, context)
     elif query.data == 'demote':
         demote(update, context)
+    elif query.data == 'setwelcome':
+        setwelcome(update, context)
 
 def main() -> None:
     # Read the bot token from the environment variable
@@ -348,11 +371,13 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("signin", signin))
     dispatcher.add_handler(CommandHandler("balance", balance))
     dispatcher.add_handler(CommandHandler("withdraw", withdraw))
+    dispatcher.add_handler(CommandHandler("setwelcome", setwelcome))
     dispatcher.add_handler(CallbackQueryHandler(button))
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
+    dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, welcome))
 
     # Start the Bot
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 443))
     updater.start_webhook(listen="0.0.0.0", port=port, url_path=token)
     updater.bot.set_webhook(f'https://{os.environ.get("HEROKU_APP_NAME")}.herokuapp.com/{token}')
 

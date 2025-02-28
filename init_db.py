@@ -28,6 +28,13 @@ CREATE TABLE IF NOT EXISTS bans (
 );
 """)
 
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS settings (
+    chat_id BIGINT PRIMARY KEY,
+    welcome_message TEXT
+);
+""")
+
 conn.commit()
 cursor.close()
 conn.close()
