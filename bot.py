@@ -378,9 +378,10 @@ def main() -> None:
 
     # Start the Bot
     port = int(os.environ.get('PORT', 8443))
+    webhook_url = os.getenv('WEBHOOK_URL')
     try:
         updater.start_webhook(listen="0.0.0.0", port=port, url_path=token)
-        updater.bot.set_webhook(f'https://{os.environ.get("HEROKU_APP_NAME")}.herokuapp.com/{token}')
+        updater.bot.set_webhook(f'{webhook_url}/{token}')
     except Exception as e:
         logger.error(f'Error setting up webhook: {e}')
 
