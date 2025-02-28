@@ -377,7 +377,7 @@ def main() -> None:
     dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, welcome))
 
     # Start the Bot
-    port = int(os.environ.get('PORT', 443))
+    port = int(os.environ.get('PORT', 8443))
     updater.start_webhook(listen="0.0.0.0", port=port, url_path=token)
     updater.bot.set_webhook(f'https://{os.environ.get("HEROKU_APP_NAME")}.herokuapp.com/{token}')
 
