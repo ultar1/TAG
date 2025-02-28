@@ -17,6 +17,9 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 cursor = conn.cursor()
 
+# Define owner
+OWNER_USERNAME = 'star_ies1'
+
 # Define a few command handlers
 
 def start(update: Update, context: CallbackContext) -> None:
@@ -24,7 +27,24 @@ def start(update: Update, context: CallbackContext) -> None:
         [InlineKeyboardButton("Sign In", callback_data='signin')],
         [InlineKeyboardButton("Balance", callback_data='balance')],
         [InlineKeyboardButton("Withdraw", callback_data='withdraw')],
-        [InlineKeyboardButton("Help", callback_data='help')]
+        [InlineKeyboardButton("Help", callback_data='help')],
+        [InlineKeyboardButton("Owner", url='https://t.me/star_ies1')],
+        [InlineKeyboardButton("Add", callback_data='add')],
+        [InlineKeyboardButton("Remove", callback_data='remove')],
+        [InlineKeyboardButton("List", callback_data='list')],
+        [InlineKeyboardButton("Kick", callback_data='kick')],
+        [InlineKeyboardButton("Pin", callback_data='pin')],
+        [InlineKeyboardButton("Unpin", callback_data='unpin')],
+        [InlineKeyboardButton("Mute", callback_data='mute')],
+        [InlineKeyboardButton("Unmute", callback_data='unmute')],
+        [InlineKeyboardButton("Stats", callback_data='stats')],
+        [InlineKeyboardButton("Info", callback_data='info')],
+        [InlineKeyboardButton("Antilink", callback_data='antilink')],
+        [InlineKeyboardButton("Warn", callback_data='warn')],
+        [InlineKeyboardButton("Ban", callback_data='ban')],
+        [InlineKeyboardButton("Unban", callback_data='unban')],
+        [InlineKeyboardButton("Promote", callback_data='promote')],
+        [InlineKeyboardButton("Demote", callback_data='demote')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     update.message.reply_text('Hi! I am your group management bot. Choose an option:', reply_markup=reply_markup)
@@ -199,7 +219,38 @@ def button(update: Update, context: CallbackContext) -> None:
         withdraw(update, context)
     elif query.data == 'help':
         help_command(update, context)
-
+    elif query.data == 'add':
+        add(update, context)
+    elif query.data == 'remove':
+        remove(update, context)
+    elif query.data == 'list':
+        list_members(update, context)
+    elif query.data == 'kick':
+        kick(update, context)
+    elif query.data == 'pin':
+        pin(update, context)
+    elif query.data == 'unpin':
+        unpin(update, context)
+    elif query.data == 'mute':
+        mute(update, context)
+    elif query.data == 'unmute':
+        unmute(update, context)
+    elif query.data == 'stats':
+        stats(update, context)
+    elif query.data == 'info':
+        info(update, context)
+    elif query.data == 'antilink':
+        antilink(update, context)
+    elif query.data == 'warn':
+        warn(update, context)
+    elif query.data == 'ban':
+        ban(update, context)
+    elif query.data == 'unban':
+        unban(update, context)
+    elif query.data == 'promote':
+        promote(update, context)
+    elif query.data == 'demote':
+        demote(update, context)
 
 def main() -> None:
     # Read the bot token from the environment variable
