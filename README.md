@@ -36,6 +36,8 @@ $ python bot.py
 
 ## Deploying to Heroku
 
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
 1. Create a Heroku app:
 
 ```sh
