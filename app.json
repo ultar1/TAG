@@ -11,7 +11,7 @@
   },
   "addons": [
     {
-      "plan": "heroku-postgresql"
+      "plan": "heroku-postgresql:standard-0"
     }
   ],
   "formation": {
