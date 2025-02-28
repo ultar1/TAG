@@ -2,6 +2,8 @@ import logging
 import os
 from telegram import Update, ChatPermissions
 from telegram.ext import Updater, CommandHandler, CallbackContext
+from telegram.ext import MessageHandler, Filters
+import psycopg2
 
 # Enable logging
 logging.basicConfig(
@@ -9,13 +11,18 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Database connection
+DATABASE_URL = os.getenv('DATABASE_URL')
+conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+cursor = conn.cursor()
+
 # Define a few command handlers
 
 def start(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Hi!')
+    update.message.reply_text('Hi! I am your group management bot.')
 
 def help_command(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Help!')
+    update.message.reply_text('Available commands: /add, /remove, /list, /kick, /pin, /unpin, /mute, /unmute, /stats, /info, /antilink, /warn, /ban, /unban, /promote, /demote')
 
 # Group management commands
 def add(update: Update, context: CallbackContext) -> None:
@@ -73,6 +80,57 @@ def info(update: Update, context: CallbackContext) -> None:
 def antilink(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Antilink command')
 
+def warn(update: Update, context: CallbackContext) -> None:
+    if context.args:
+        user_id = context.args[0]
+        cursor.execute("INSERT INTO warnings (user_id) VALUES (%s) ON CONFLICT (user_id) DO UPDATE SET count = warnings.count + 1", (user_id,))
+        conn.commit()
+        update.message.reply_text(f'User {user_id} warned.')
+    else:
+        update.message.reply_text('Usage: /warn <user_id>')
+
+def ban(update: Update, context: CallbackContext) -> None:
+    if context.args:
+        user_id = context.args[0]
+        context.bot.ban_chat_member(update.effective_chat.id, user_id)
+        cursor.execute("INSERT INTO bans (user_id) VALUES (%s)", (user_id,))
+        conn.commit()
+        update.message.reply_text(f'User {user_id} banned.')
+    else:
+        update.message.reply_text('Usage: /ban <user_id>')
+
+def unban(update: Update, context: CallbackContext) -> None:
+    if context.args:
+        user_id = context.args[0]
+        context.bot.unban_chat_member(update.effective_chat.id, user_id)
+        cursor.execute("DELETE FROM bans WHERE user_id = %s", (user_id,))
+        conn.commit()
+        update.message.reply_text(f'User {user_id} unbanned.')
+    else:
+        update.message.reply_text('Usage: /unban <user_id>')
+
+def promote(update: Update, context: CallbackContext) -> None:
+    if context.args:
+        user_id = context.args[0]
+        context.bot.promote_chat_member(update.effective_chat.id, user_id, can_change_info=True, can_delete_messages=True, can_invite_users=True, can_restrict_members=True, can_pin_messages=True, can_promote_members=True)
+        update.message.reply_text(f'User {user_id} promoted to admin.')
+    else:
+        update.message.reply_text('Usage: /promote <user_id>')
+
+def demote(update: Update, context: CallbackContext) -> None:
+    if context.args:
+        user_id = context.args[0]
+        context.bot.promote_chat_member(update.effective_chat.id, user_id, can_change_info=False, can_delete_messages=False, can_invite_users=False, can_restrict_members=False, can_pin_messages=False, can_promote_members=False)
+        update.message.reply_text(f'User {user_id} demoted from admin.')
+    else:
+        update.message.reply_text('Usage: /demote <user_id>')
+
+# Message handler for antilink
+def handle_message(update: Update, context: CallbackContext) -> None:
+    if 'http' in update.message.text:
+        update.message.delete()
+        update.message.reply_text('Links are not allowed!')
+
 
 def main() -> None:
     # Read the bot token from the environment variable
@@ -101,6 +159,12 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("stats", stats))
     dispatcher.add_handler(CommandHandler("info", info))
     dispatcher.add_handler(CommandHandler("antilink", antilink))
+    dispatcher.add_handler(CommandHandler("warn", warn))
+    dispatcher.add_handler(CommandHandler("ban", ban))
+    dispatcher.add_handler(CommandHandler("unban", unban))
+    dispatcher.add_handler(CommandHandler("promote", promote))
+    dispatcher.add_handler(CommandHandler("demote", demote))
+    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
 
     # Start the Bot
     updater.start_polling()

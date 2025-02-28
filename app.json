@@ -7,6 +7,10 @@
     "TOKEN": {
       "description": "The token for the Telegram bot",
       "required": true
+    },
+    "DATABASE_URL": {
+      "description": "The database URL for PostgreSQL",
+      "required": true
     }
   }
 }
