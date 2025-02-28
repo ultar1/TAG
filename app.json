@@ -9,11 +9,6 @@
       "required": true
     }
   },
-  "addons": [
-    {
-      "plan": "heroku-postgresql"
-    }
-  ],
   "formation": {
     "web": {
       "quantity": 1,
