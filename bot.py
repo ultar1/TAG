@@ -287,7 +287,7 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help_command))
     dispatcher.add_handler(CommandHandler("add", add))
-    dispatcher.add_handler(CommandHandler("remove", remove))
+    dispatcher.add_handler(CommandHandler(CommandHandler("remove", remove))
     dispatcher.add_handler(CommandHandler("list", list_members))
     dispatcher.add_handler(CommandHandler("kick", kick))
     dispatcher.add_handler(CommandHandler("pin", pin))
@@ -311,7 +311,7 @@ def main() -> None:
     # Start the Bot
     port = int(os.environ.get('PORT', 5000))
     updater.start_webhook(listen="0.0.0.0", port=port, url_path=token)
-    updater.bot.set_webhook(f'https://{os.environ.get('HEROKU_APP_NAME')}.herokuapp.com/{token}')
+    updater.bot.set_webhook(f'https://{os.environ.get("HEROKU_APP_NAME")}.herokuapp.com/{token}')
 
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT
