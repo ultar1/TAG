@@ -299,7 +299,9 @@ def main() -> None:
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
 
     # Start the Bot
-    updater.start_polling()
+    port = int(os.environ.get('PORT', 5000))
+    updater.start_webhook(listen="0.0.0.0", port=port, url_path=token)
+    updater.bot.set_webhook(f'https://{os.environ.get('HEROKU_APP_NAME')}.herokuapp.com/{token}')
 
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT
