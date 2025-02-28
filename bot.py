@@ -60,8 +60,18 @@ def group_commands(update: Update, context: CallbackContext) -> None:
 def help_command(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Available commands: /add, /remove, /list, /kick, /pin, /unpin, /mute, /unmute, /stats, /info, /antilink, /warn, /ban, /unban, /promote, /demote, /signin, /balance, /withdraw')
 
+# Helper function to check if user is admin
+def is_admin(update: Update) -> bool:
+    user_id = update.effective_user.id
+    chat_id = update.effective_chat.id
+    member = update.effective_chat.get_member(user_id)
+    return member.status in ['administrator', 'creator']
+
 # Group management commands
 def add(update: Update, context: CallbackContext) -> None:
+    if not is_admin(update):
+        update.message.reply_text('You are not authorized to use this command.')
+        return
     if update.message.reply_to_message:
         user_id = update.message.reply_to_message.from_user.id
     else:
@@ -69,6 +79,9 @@ def add(update: Update, context: CallbackContext) -> None:
     update.message.reply_text(f'Add command for user {user_id}')
 
 def remove(update: Update, context: CallbackContext) -> None:
+    if not is_admin(update):
+        update.message.reply_text('You are not authorized to use this command.')
+        return
     if update.message.reply_to_message:
         user_id = update.message.reply_to_message.from_user.id
     else:
@@ -80,6 +93,9 @@ def list_members(update: Update, context: CallbackContext) -> None:
     update.message.reply_text(f'Members: {", ".join(members)}')
 
 def kick(update: Update, context: CallbackContext) -> None:
+    if not is_admin(update):
+        update.message.reply_text('You are not authorized to use this command.')
+        return
     if update.message.reply_to_message:
         user_id = update.message.reply_to_message.from_user.id
     else:
@@ -88,6 +104,9 @@ def kick(update: Update, context: CallbackContext) -> None:
     update.message.reply_text(f'User {user_id} kicked.')
 
 def pin(update: Update, context: CallbackContext) -> None:
+    if not is_admin(update):
+        update.message.reply_text('You are not authorized to use this command.')
+        return
     if update.message.reply_to_message:
         update.message.reply_to_message.pin()
         update.message.reply_text('Message pinned.')
@@ -95,10 +114,16 @@ def pin(update: Update, context: CallbackContext) -> None:
         update.message.reply_text('Reply to a message to pin it.')
 
 def unpin(update: Update, context: CallbackContext) -> None:
+    if not is_admin(update):
+        update.message.reply_text('You are not authorized to use this command.')
+        return
     context.bot.unpin_all_chat_messages(update.effective_chat.id)
     update.message.reply_text('All messages unpinned.')
 
 def mute(update: Update, context: CallbackContext) -> None:
+    if not is_admin(update):
+        update.message.reply_text('You are not authorized to use this command.')
+        return
     if update.message.reply_to_message:
         user_id = update.message.reply_to_message.from_user.id
     else:
@@ -107,6 +132,9 @@ def mute(update: Update, context: CallbackContext) -> None:
     update.message.reply_text(f'User {user_id} muted.')
 
 def unmute(update: Update, context: CallbackContext) -> None:
+    if not is_admin(update):
+        update.message.reply_text('You are not authorized to use this command.')
+        return
     if update.message.reply_to_message:
         user_id = update.message.reply_to_message.from_user.id
     else:
@@ -125,6 +153,9 @@ def antilink(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Antilink command')
 
 def warn(update: Update, context: CallbackContext) -> None:
+    if not is_admin(update):
+        update.message.reply_text('You are not authorized to use this command.')
+        return
     if update.message.reply_to_message:
         user_id = update.message.reply_to_message.from_user.id
     else:
@@ -134,6 +165,9 @@ def warn(update: Update, context: CallbackContext) -> None:
     update.message.reply_text(f'User {user_id} warned.')
 
 def ban(update: Update, context: CallbackContext) -> None:
+    if not is_admin(update):
+        update.message.reply_text('You are not authorized to use this command.')
+        return
     if update.message.reply_to_message:
         user_id = update.message.reply_to_message.from_user.id
     else:
@@ -144,6 +178,9 @@ def ban(update: Update, context: CallbackContext) -> None:
     update.message.reply_text(f'User {user_id} banned.')
 
 def unban(update: Update, context: CallbackContext) -> None:
+    if not is_admin(update):
+        update.message.reply_text('You are not authorized to use this command.')
+        return
     if update.message.reply_to_message:
         user_id = update.message.reply_to_message.from_user.id
     else:
@@ -154,6 +191,9 @@ def unban(update: Update, context: CallbackContext) -> None:
     update.message.reply_text(f'User {user_id} unbanned.')
 
 def promote(update: Update, context: CallbackContext) -> None:
+    if not is_admin(update):
+        update.message.reply_text('You are not authorized to use this command.')
+        return
     if update.message.reply_to_message:
         user_id = update.message.reply_to_message.from_user.id
     else:
@@ -162,6 +202,9 @@ def promote(update: Update, context: CallbackContext) -> None:
     update.message.reply_text(f'User {user_id} promoted to admin.')
 
 def demote(update: Update, context: CallbackContext) -> None:
+    if not is_admin(update):
+        update.message.reply_text('You are not authorized to use this command.')
+        return
     if update.message.reply_to_message:
         user_id = update.message.reply_to_message.from_user.id
     else:
@@ -202,7 +245,7 @@ def balance(update: Update, context: CallbackContext) -> None:
 
 # Withdraw command
 def withdraw(update: Update, context: CallbackContext) -> None:
-    if update.effective_user.id not in [admin_id_1, admin_id_2]:  # Replace with actual admin IDs
+    if not is_admin(update):
         update.message.reply_text('You are not authorized to use this command.')
         return
     if context.args:
@@ -287,7 +330,7 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help_command))
     dispatcher.add_handler(CommandHandler("add", add))
-    dispatcher.add_handler(CommandHandler(CommandHandler("remove", remove))
+    dispatcher.add_handler(CommandHandler("remove", remove))
     dispatcher.add_handler(CommandHandler("list", list_members))
     dispatcher.add_handler(CommandHandler("kick", kick))
     dispatcher.add_handler(CommandHandler("pin", pin))
