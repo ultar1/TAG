@@ -54,22 +54,30 @@ def help_command(update: Update, context: CallbackContext) -> None:
 
 # Group management commands
 def add(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Add command')
+    if update.message.reply_to_message:
+        user_id = update.message.reply_to_message.from_user.id
+    else:
+        user_id = context.args[0]
+    update.message.reply_text(f'Add command for user {user_id}')
 
 def remove(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Remove command')
+    if update.message.reply_to_message:
+        user_id = update.message.reply_to_message.from_user.id
+    else:
+        user_id = context.args[0]
+    update.message.reply_text(f'Remove command for user {user_id}')
 
 def list_members(update: Update, context: CallbackContext) -> None:
     members = [member.user.username for member in update.effective_chat.get_members()]
     update.message.reply_text(f'Members: {", ".join(members)}')
 
 def kick(update: Update, context: CallbackContext) -> None:
-    if context.args:
-        user_id = context.args[0]
-        context.bot.kick_chat_member(update.effective_chat.id, user_id)
-        update.message.reply_text(f'User {user_id} kicked.')
+    if update.message.reply_to_message:
+        user_id = update.message.reply_to_message.from_user.id
     else:
-        update.message.reply_text('Usage: /kick <user_id>')
+        user_id = context.args[0]
+    context.bot.kick_chat_member(update.effective_chat.id, user_id)
+    update.message.reply_text(f'User {user_id} kicked.')
 
 def pin(update: Update, context: CallbackContext) -> None:
     if update.message.reply_to_message:
@@ -83,20 +91,20 @@ def unpin(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('All messages unpinned.')
 
 def mute(update: Update, context: CallbackContext) -> None:
-    if context.args:
-        user_id = context.args[0]
-        context.bot.restrict_chat_member(update.effective_chat.id, user_id, ChatPermissions(can_send_messages=False))
-        update.message.reply_text(f'User {user_id} muted.')
+    if update.message.reply_to_message:
+        user_id = update.message.reply_to_message.from_user.id
     else:
-        update.message.reply_text('Usage: /mute <user_id>')
+        user_id = context.args[0]
+    context.bot.restrict_chat_member(update.effective_chat.id, user_id, ChatPermissions(can_send_messages=False))
+    update.message.reply_text(f'User {user_id} muted.')
 
 def unmute(update: Update, context: CallbackContext) -> None:
-    if context.args:
-        user_id = context.args[0]
-        context.bot.restrict_chat_member(update.effective_chat.id, user_id, ChatPermissions(can_send_messages=True))
-        update.message.reply_text(f'User {user_id} unmuted.')
+    if update.message.reply_to_message:
+        user_id = update.message.reply_to_message.from_user.id
     else:
-        update.message.reply_text('Usage: /unmute <user_id>')
+        user_id = context.args[0]
+    context.bot.restrict_chat_member(update.effective_chat.id, user_id, ChatPermissions(can_send_messages=True))
+    update.message.reply_text(f'User {user_id} unmuted.')
 
 def stats(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Stats command')
@@ -109,49 +117,49 @@ def antilink(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Antilink command')
 
 def warn(update: Update, context: CallbackContext) -> None:
-    if context.args:
-        user_id = context.args[0]
-        cursor.execute("INSERT INTO warnings (user_id) VALUES (%s) ON CONFLICT (user_id) DO UPDATE SET count = warnings.count + 1", (user_id,))
-        conn.commit()
-        update.message.reply_text(f'User {user_id} warned.')
+    if update.message.reply_to_message:
+        user_id = update.message.reply_to_message.from_user.id
     else:
-        update.message.reply_text('Usage: /warn <user_id>')
+        user_id = context.args[0]
+    cursor.execute("INSERT INTO warnings (user_id) VALUES (%s) ON CONFLICT (user_id) DO UPDATE SET count = warnings.count + 1", (user_id,))
+    conn.commit()
+    update.message.reply_text(f'User {user_id} warned.')
 
 def ban(update: Update, context: CallbackContext) -> None:
-    if context.args:
-        user_id = context.args[0]
-        context.bot.ban_chat_member(update.effective_chat.id, user_id)
-        cursor.execute("INSERT INTO bans (user_id) VALUES (%s)", (user_id,))
-        conn.commit()
-        update.message.reply_text(f'User {user_id} banned.')
+    if update.message.reply_to_message:
+        user_id = update.message.reply_to_message.from_user.id
     else:
-        update.message.reply_text('Usage: /ban <user_id>')
+        user_id = context.args[0]
+    context.bot.ban_chat_member(update.effective_chat.id, user_id)
+    cursor.execute("INSERT INTO bans (user_id) VALUES (%s)", (user_id,))
+    conn.commit()
+    update.message.reply_text(f'User {user_id} banned.')
 
 def unban(update: Update, context: CallbackContext) -> None:
-    if context.args:
-        user_id = context.args[0]
-        context.bot.unban_chat_member(update.effective_chat.id, user_id)
-        cursor.execute("DELETE FROM bans WHERE user_id = %s", (user_id,))
-        conn.commit()
-        update.message.reply_text(f'User {user_id} unbanned.')
+    if update.message.reply_to_message:
+        user_id = update.message.reply_to_message.from_user.id
     else:
-        update.message.reply_text('Usage: /unban <user_id>')
+        user_id = context.args[0]
+    context.bot.unban_chat_member(update.effective_chat.id, user_id)
+    cursor.execute("DELETE FROM bans WHERE user_id = %s", (user_id,))
+    conn.commit()
+    update.message.reply_text(f'User {user_id} unbanned.')
 
 def promote(update: Update, context: CallbackContext) -> None:
-    if context.args:
-        user_id = context.args[0]
-        context.bot.promote_chat_member(update.effective_chat.id, user_id, can_change_info=True, can_delete_messages=True, can_invite_users=True, can_restrict_members=True, can_pin_messages=True, can_promote_members=True)
-        update.message.reply_text(f'User {user_id} promoted to admin.')
+    if update.message.reply_to_message:
+        user_id = update.message.reply_to_message.from_user.id
     else:
-        update.message.reply_text('Usage: /promote <user_id>')
+        user_id = context.args[0]
+    context.bot.promote_chat_member(update.effective_chat.id, user_id, can_change_info=True, can_delete_messages=True, can_invite_users=True, can_restrict_members=True, can_pin_messages=True, can_promote_members=True)
+    update.message.reply_text(f'User {user_id} promoted to admin.')
 
 def demote(update: Update, context: CallbackContext) -> None:
-    if context.args:
-        user_id = context.args[0]
-        context.bot.promote_chat_member(update.effective_chat.id, user_id, can_change_info=False, can_delete_messages=False, can_invite_users=False, can_restrict_members=False, can_pin_messages=False, can_promote_members=False)
-        update.message.reply_text(f'User {user_id} demoted from admin.')
+    if update.message.reply_to_message:
+        user_id = update.message.reply_to_message.from_user.id
     else:
-        update.message.reply_text('Usage: /demote <user_id>')
+        user_id = context.args[0]
+    context.bot.promote_chat_member(update.effective_chat.id, user_id, can_change_info=False, can_delete_messages=False, can_invite_users=False, can_restrict_members=False, can_pin_messages=False, can_promote_members=False)
+    update.message.reply_text(f'User {user_id} demoted from admin.')
 
 # Message handler for antilink
 def handle_message(update: Update, context: CallbackContext) -> None:
