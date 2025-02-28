@@ -1,9 +1,10 @@
 import logging
 import os
-from telegram import Update, ChatPermissions
+from telegram import Update, ChatPermissions, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackContext
-from telegram.ext import MessageHandler, Filters
+from telegram.ext import MessageHandler, Filters, CallbackQueryHandler
 import psycopg2
+from datetime import datetime, timedelta
 
 # Enable logging
 logging.basicConfig(
@@ -19,10 +20,17 @@ cursor = conn.cursor()
 # Define a few command handlers
 
 def start(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Hi! I am your group management bot.')
+    keyboard = [
+        [InlineKeyboardButton("Sign In", callback_data='signin')],
+        [InlineKeyboardButton("Balance", callback_data='balance')],
+        [InlineKeyboardButton("Withdraw", callback_data='withdraw')],
+        [InlineKeyboardButton("Help", callback_data='help')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    update.message.reply_text('Hi! I am your group management bot. Choose an option:', reply_markup=reply_markup)
 
 def help_command(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Available commands: /add, /remove, /list, /kick, /pin, /unpin, /mute, /unmute, /stats, /info, /antilink, /warn, /ban, /unban, /promote, /demote')
+    update.message.reply_text('Available commands: /add, /remove, /list, /kick, /pin, /unpin, /mute, /unmute, /stats, /info, /antilink, /warn, /ban, /unban, /promote, /demote, /signin, /balance, /withdraw')
 
 # Group management commands
 def add(update: Update, context: CallbackContext) -> None:
@@ -131,6 +139,67 @@ def handle_message(update: Update, context: CallbackContext) -> None:
         update.message.delete()
         update.message.reply_text('Links are not allowed!')
 
+# Sign in command
+def signin(update: Update, context: CallbackContext) -> None:
+    user_id = update.effective_user.id
+    cursor.execute("SELECT last_signin FROM users WHERE user_id = %s", (user_id,))
+    result = cursor.fetchone()
+    if result:
+        last_signin = result[0]
+        if datetime.now() - last_signin < timedelta(hours=24):
+            update.message.reply_text('You can only sign in once every 24 hours.')
+            return
+    cursor.execute("INSERT INTO users (user_id, balance, last_signin) VALUES (%s, %s, %s) ON CONFLICT (user_id) DO UPDATE SET balance = users.balance + 50, last_signin = %s", (user_id, 50, datetime.now(), datetime.now()))
+    conn.commit()
+    update.message.reply_text('You have signed in and received 50 NGN.')
+
+# Balance command
+def balance(update: Update, context: CallbackContext) -> None:
+    user_id = update.effective_user.id
+    cursor.execute("SELECT balance FROM users WHERE user_id = %s", (user_id,))
+    result = cursor.fetchone()
+    if result:
+        balance = result[0]
+        update.message.reply_text(f'Your balance is {balance} NGN.')
+    else:
+        update.message.reply_text('You have no balance.')
+
+# Withdraw command
+def withdraw(update: Update, context: CallbackContext) -> None:
+    if update.effective_user.id not in [admin_id_1, admin_id_2]:  # Replace with actual admin IDs
+        update.message.reply_text('You are not authorized to use this command.')
+        return
+    if context.args:
+        user_id = context.args[0]
+        amount = int(context.args[1])
+        cursor.execute("SELECT balance FROM users WHERE user_id = %s", (user_id,))
+        result = cursor.fetchone()
+        if result:
+            balance = result[0]
+            if balance >= amount and amount >= 1000:
+                cursor.execute("UPDATE users SET balance = balance - %s WHERE user_id = %s", (amount, user_id))
+                conn.commit()
+                update.message.reply_text(f'User {user_id} has withdrawn {amount} NGN. New balance is {balance - amount} NGN.')
+            else:
+                update.message.reply_text('Insufficient balance or amount less than 1000 NGN.')
+        else:
+            update.message.reply_text('User not found.')
+    else:
+        update.message.reply_text('Usage: /withdraw <user_id> <amount>')
+
+# Callback query handler
+def button(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    query.answer()
+    if query.data == 'signin':
+        signin(update, context)
+    elif query.data == 'balance':
+        balance(update, context)
+    elif query.data == 'withdraw':
+        withdraw(update, context)
+    elif query.data == 'help':
+        help_command(update, context)
+
 
 def main() -> None:
     # Read the bot token from the environment variable
@@ -164,6 +233,10 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("unban", unban))
     dispatcher.add_handler(CommandHandler("promote", promote))
     dispatcher.add_handler(CommandHandler("demote", demote))
+    dispatcher.add_handler(CommandHandler("signin", signin))
+    dispatcher.add_handler(CommandHandler("balance", balance))
+    dispatcher.add_handler(CommandHandler("withdraw", withdraw))
+    dispatcher.add_handler(CallbackQueryHandler(button))
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
 
     # Start the Bot
