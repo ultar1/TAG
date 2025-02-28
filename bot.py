@@ -87,3 +87,20 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("remove", remove))
     dispatcher.add_handler(CommandHandler("list", list_members))
     dispatcher.add_handler(CommandHandler("kick", kick))
+    dispatcher.add_handler(CommandHandler("pin", pin))
+    dispatcher.add_handler(CommandHandler("unpin", unpin))
+    dispatcher.add_handler(CommandHandler("mute", mute))
+    dispatcher.add_handler(CommandHandler("unmute", unmute))
+    dispatcher.add_handler(CommandHandler("stats", stats))
+    dispatcher.add_handler(CommandHandler("info", info))
+    dispatcher.add_handler(CommandHandler("antilink", antilink))
+
+    # Start the Bot
+    updater.start_polling()
+
+    # Run the bot until you press Ctrl-C or the process receives SIGINT,
+    # SIGTERM or SIGABRT
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
