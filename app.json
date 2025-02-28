@@ -1,0 +1,12 @@
+{
+  "name": "telegram-group-management-bot",
+  "description": "A Telegram bot for group management.",
+  "repository": "https://github.com/yourusername/telegram-group-management-bot",
+  "keywords": ["telegram", "bot", "group management"],
+  "env": {
+    "TOKEN": {
+      "description": "The token for the Telegram bot",
+      "required": true
+    }
+  }
+}

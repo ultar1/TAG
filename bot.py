@@ -26,12 +26,12 @@ def remove(update: Update, context: CallbackContext) -> None:
 def list_members(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('List command')
 
+def kick(update: Update, context: CallbackContext) -> None:
+    update.message.reply_text('Kick command')
 
-def main() -> None:
-    # Create the Updater and pass it your bot's token.
-    updater = Updater("YOUR_TOKEN")
+def pin(update: Update, context: CallbackContext) -> None:
+    update.message.reply_text('Pin command')
 
-    # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
 
     # on different commands - answer in Telegram
