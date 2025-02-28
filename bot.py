@@ -24,11 +24,19 @@ OWNER_USERNAME = 'star_ies1'
 
 def start(update: Update, context: CallbackContext) -> None:
     keyboard = [
+        [InlineKeyboardButton("Group Commands", callback_data='group_commands')],
+        [InlineKeyboardButton("Owner", url='https://t.me/star_ies1')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    update.message.reply_text('Hi! I am your group management bot. Choose an option:', reply_markup=reply_markup)
+
+# Group commands menu
+def group_commands(update: Update, context: CallbackContext) -> None:
+    keyboard = [
         [InlineKeyboardButton("Sign In", callback_data='signin')],
         [InlineKeyboardButton("Balance", callback_data='balance')],
         [InlineKeyboardButton("Withdraw", callback_data='withdraw')],
         [InlineKeyboardButton("Help", callback_data='help')],
-        [InlineKeyboardButton("Owner", url='https://t.me/star_ies1')],
         [InlineKeyboardButton("Add", callback_data='add')],
         [InlineKeyboardButton("Remove", callback_data='remove')],
         [InlineKeyboardButton("List", callback_data='list')],
@@ -47,7 +55,7 @@ def start(update: Update, context: CallbackContext) -> None:
         [InlineKeyboardButton("Demote", callback_data='demote')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    update.message.reply_text('Hi! I am your group management bot. Choose an option:', reply_markup=reply_markup)
+    update.callback_query.message.reply_text('Choose a group command:', reply_markup=reply_markup)
 
 def help_command(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Available commands: /add, /remove, /list, /kick, /pin, /unpin, /mute, /unmute, /stats, /info, /antilink, /warn, /ban, /unban, /promote, /demote, /signin, /balance, /withdraw')
@@ -219,7 +227,9 @@ def withdraw(update: Update, context: CallbackContext) -> None:
 def button(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     query.answer()
-    if query.data == 'signin':
+    if query.data == 'group_commands':
+        group_commands(update, context)
+    elif query.data == 'signin':
         signin(update, context)
     elif query.data == 'balance':
         balance(update, context)
