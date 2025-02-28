@@ -1,4 +1,5 @@
 import logging
+import os
 from telegram import Update, ChatPermissions
 from telegram.ext import Updater, CommandHandler, CallbackContext
 
@@ -74,8 +75,14 @@ def antilink(update: Update, context: CallbackContext) -> None:
 
 
 def main() -> None:
+    # Read the bot token from the environment variable
+    token = os.getenv("TOKEN")
+    if not token:
+        logger.error("No token provided. Set the TOKEN environment variable.")
+        return
+
     # Create the Updater and pass it your bot's token.
-    updater = Updater("YOUR_TOKEN")
+    updater = Updater(token)
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
