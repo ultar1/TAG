@@ -340,7 +340,7 @@ def main() -> None:
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
     dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, welcome))
 
-    port = int(os.environ.get('PORT', 8443))
+    port = 8443
     webhook_url = os.getenv('WEBHOOK_URL')
     try:
         updater.start_webhook(listen="0.0.0.0", port=port, url_path=token)
