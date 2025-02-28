@@ -12,5 +12,10 @@
       "description": "The database URL for PostgreSQL",
       "required": true
     }
-  }
+  },
+  "addons": [
+    {
+      "plan": "heroku-postgresql"
+    }
+  ]
 }
