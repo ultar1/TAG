@@ -63,7 +63,6 @@ def help_command(update: Update, context: CallbackContext) -> None:
 # Helper function to check if user is admin
 def is_admin(update: Update) -> bool:
     user_id = update.effective_user.id
-    chat_id = update.effective_chat.id
     member = update.effective_chat.get_member(user_id)
     return member.status in ['administrator', 'creator']
 
@@ -72,20 +71,14 @@ def add(update: Update, context: CallbackContext) -> None:
     if not is_admin(update):
         update.message.reply_text('You are not authorized to use this command.')
         return
-    if update.message.reply_to_message:
-        user_id = update.message.reply_to_message.from_user.id
-    else:
-        user_id = context.args[0]
+    user_id = update.message.reply_to_message.from_user.id if update.message.reply_to_message else context.args[0]
     update.message.reply_text(f'Add command for user {user_id}')
 
 def remove(update: Update, context: CallbackContext) -> None:
     if not is_admin(update):
         update.message.reply_text('You are not authorized to use this command.')
         return
-    if update.message.reply_to_message:
-        user_id = update.message.reply_to_message.from_user.id
-    else:
-        user_id = context.args[0]
+    user_id = update.message.reply_to_message.from_user.id if update.message.reply_to_message else context.args[0]
     update.message.reply_text(f'Remove command for user {user_id}')
 
 def list_members(update: Update, context: CallbackContext) -> None:
@@ -96,10 +89,7 @@ def kick(update: Update, context: CallbackContext) -> None:
     if not is_admin(update):
         update.message.reply_text('You are not authorized to use this command.')
         return
-    if update.message.reply_to_message:
-        user_id = update.message.reply_to_message.from_user.id
-    else:
-        user_id = context.args[0]
+    user_id = update.message.reply_to_message.from_user.id if update.message.reply_to_message else context.args[0]
     context.bot.kick_chat_member(update.effective_chat.id, user_id)
     update.message.reply_text(f'User {user_id} kicked.')
 
@@ -124,10 +114,7 @@ def mute(update: Update, context: CallbackContext) -> None:
     if not is_admin(update):
         update.message.reply_text('You are not authorized to use this command.')
         return
-    if update.message.reply_to_message:
-        user_id = update.message.reply_to_message.from_user.id
-    else:
-        user_id = context.args[0]
+    user_id = update.message.reply_to_message.from_user.id if update.message.reply_to_message else context.args[0]
     context.bot.restrict_chat_member(update.effective_chat.id, user_id, ChatPermissions(can_send_messages=False))
     update.message.reply_text(f'User {user_id} muted.')
 
@@ -135,10 +122,7 @@ def unmute(update: Update, context: CallbackContext) -> None:
     if not is_admin(update):
         update.message.reply_text('You are not authorized to use this command.')
         return
-    if update.message.reply_to_message:
-        user_id = update.message.reply_to_message.from_user.id
-    else:
-        user_id = context.args[0]
+    user_id = update.message.reply_to_message.from_user.id if update.message.reply_to_message else context.args[0]
     context.bot.restrict_chat_member(update.effective_chat.id, user_id, ChatPermissions(can_send_messages=True))
     update.message.reply_text(f'User {user_id} unmuted.')
 
@@ -156,10 +140,7 @@ def warn(update: Update, context: CallbackContext) -> None:
     if not is_admin(update):
         update.message.reply_text('You are not authorized to use this command.')
         return
-    if update.message.reply_to_message:
-        user_id = update.message.reply_to_message.from_user.id
-    else:
-        user_id = context.args[0]
+    user_id = update.message.reply_to_message.from_user.id if update.message.reply_to_message else context.args[0]
     cursor.execute("INSERT INTO warnings (user_id) VALUES (%s) ON CONFLICT (user_id) DO UPDATE SET count = warnings.count + 1", (user_id,))
     conn.commit()
     update.message.reply_text(f'User {user_id} warned.')
@@ -168,10 +149,7 @@ def ban(update: Update, context: CallbackContext) -> None:
     if not is_admin(update):
         update.message.reply_text('You are not authorized to use this command.')
         return
-    if update.message.reply_to_message:
-        user_id = update.message.reply_to_message.from_user.id
-    else:
-        user_id = context.args[0]
+    user_id = update.message.reply_to_message.from_user.id if update.message.reply_to_message else context.args[0]
     context.bot.ban_chat_member(update.effective_chat.id, user_id)
     cursor.execute("INSERT INTO bans (user_id) VALUES (%s)", (user_id,))
     conn.commit()
@@ -181,10 +159,7 @@ def unban(update: Update, context: CallbackContext) -> None:
     if not is_admin(update):
         update.message.reply_text('You are not authorized to use this command.')
         return
-    if update.message.reply_to_message:
-        user_id = update.message.reply_to_message.from_user.id
-    else:
-        user_id = context.args[0]
+    user_id = update.message.reply_to_message.from_user.id if update.message.reply_to_message else context.args[0]
     context.bot.unban_chat_member(update.effective_chat.id, user_id)
     cursor.execute("DELETE FROM bans WHERE user_id = %s", (user_id,))
     conn.commit()
@@ -194,10 +169,7 @@ def promote(update: Update, context: CallbackContext) -> None:
     if not is_admin(update):
         update.message.reply_text('You are not authorized to use this command.')
         return
-    if update.message.reply_to_message:
-        user_id = update.message.reply_to_message.from_user.id
-    else:
-        user_id = context.args[0]
+    user_id = update.message.reply_to_message.from_user.id if update.message.reply_to_message else context.args[0]
     context.bot.promote_chat_member(update.effective_chat.id, user_id, can_change_info=True, can_delete_messages=True, can_invite_users=True, can_restrict_members=True, can_pin_messages=True, can_promote_members=True)
     update.message.reply_text(f'User {user_id} promoted to admin.')
 
@@ -205,10 +177,7 @@ def demote(update: Update, context: CallbackContext) -> None:
     if not is_admin(update):
         update.message.reply_text('You are not authorized to use this command.')
         return
-    if update.message.reply_to_message:
-        user_id = update.message.reply_to_message.from_user.id
-    else:
-        user_id = context.args[0]
+    user_id = update.message.reply_to_message.from_user.id if update.message.reply_to_message else context.args[0]
     context.bot.promote_chat_member(update.effective_chat.id, user_id, can_change_info=False, can_delete_messages=False, can_invite_users=False, can_restrict_members=False, can_pin_messages=False, can_promote_members=False)
     update.message.reply_text(f'User {user_id} demoted from admin.')
 
@@ -337,19 +306,14 @@ def button(update: Update, context: CallbackContext) -> None:
         setwelcome(update, context)
 
 def main() -> None:
-    # Read the bot token from the environment variable
     token = os.getenv("TOKEN")
     if not token:
         logger.error("No token provided. Set the TOKEN environment variable.")
         return
 
-    # Create the Updater and pass it your bot's token.
     updater = Updater(token)
-
-    # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
 
-    # on different commands - answer in Telegram
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help_command))
     dispatcher.add_handler(CommandHandler("add", add))
@@ -376,7 +340,6 @@ def main() -> None:
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
     dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, welcome))
 
-    # Start the Bot
     port = int(os.environ.get('PORT', 8443))
     webhook_url = os.getenv('WEBHOOK_URL')
     try:
@@ -385,8 +348,6 @@ def main() -> None:
     except Exception as e:
         logger.error(f'Error setting up webhook: {e}')
 
-    # Run the bot until you press Ctrl-C or the process receives SIGINT,
-    # SIGTERM or SIGABRT
     updater.idle()
 
 if __name__ == '__main__':
